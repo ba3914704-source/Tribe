@@ -85,48 +85,54 @@ class MainActivity : ComponentActivity() {
                                     onGoogleSignInClick = {
                                         coroutineScope.launch {
                                             val clientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
-                                            if (clientId.isBlank() || clientId.contains("placeholder")) {
+                                            if (clientId.isBlank() || clientId.contains("placeholder", ignoreCase = true)) {
                                                 Toast.makeText(
                                                     this@MainActivity,
-                                                    "Google Web Client ID placeholder detected. Using Google sign-in demo flow.",
-                                                    Toast.LENGTH_SHORT
+                                                    "Google Sign-In is not configured. Please check the Web OAuth Client ID.",
+                                                    Toast.LENGTH_LONG
                                                 ).show()
-                                                viewModel.onGoogleSignInSuccess("sample_id_token", "sample_nonce")
-                                            } else {
-                                                val result = viewModel.googleAuthHelper.signInWithGoogle(
-                                                    activityContext = this@MainActivity,
-                                                    serverClientId = clientId
-                                                )
-                                                result.fold(
-                                                    onSuccess = { res ->
-                                                        viewModel.onGoogleSignInSuccess(res.idToken, res.rawNonce)
-                                                    },
-                                                    onFailure = { err ->
-                                                        val message = when (err) {
-                                                            is com.example.core.security.GoogleAuthException.Cancelled ->
-                                                                "Google Sign-In cancelled"
-                                                            is com.example.core.security.GoogleAuthException.NoCredentials ->
-                                                                "No Google account available on this device. Please add a Google account in Settings."
-                                                            is com.example.core.security.GoogleAuthException.ConfigurationError ->
-                                                                "Configuration error: ${err.message}"
-                                                            else ->
-                                                                err.message ?: "Google Sign-In failed"
-                                                        }
-                                                        Toast.makeText(
-                                                            this@MainActivity,
-                                                            message,
-                                                            Toast.LENGTH_LONG
-                                                        ).show()
-                                                    }
-                                                )
+                                                return@launch
                                             }
+                                            val result = viewModel.googleAuthHelper.signInWithGoogle(
+                                                activityContext = this@MainActivity,
+                                                serverClientId = clientId
+                                            )
+                                            result.fold(
+                                                onSuccess = { res ->
+                                                    viewModel.onGoogleSignInSuccess(res.idToken, res.rawNonce)
+                                                },
+                                                onFailure = { err ->
+                                                    val message = when (err) {
+                                                        is com.example.core.security.GoogleAuthException.Cancelled ->
+                                                            "Google Sign-In cancelled"
+                                                        is com.example.core.security.GoogleAuthException.NoCredentials ->
+                                                            "No Google account available. Try the account chooser or add a Google account in Android Settings."
+                                                        is com.example.core.security.GoogleAuthException.ConfigurationError ->
+                                                            "Configuration error: ${err.message}"
+                                                        else ->
+                                                            err.message ?: "Google Sign-In failed"
+                                                    }
+                                                    Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
+                                                }
+                                            )
                                         }
                                     },
                                     onRegisterClick = { viewModel.navigateTo(AppScreen.Register) },
                                     onForgotPasswordClick = { email ->
                                         coroutineScope.launch {
-                                            viewModel.authRepository.recoverPassword(email)
-                                            Toast.makeText(this@MainActivity, "Password reset instructions sent to $email", Toast.LENGTH_SHORT).show()
+                                            val result = viewModel.authRepository.recoverPassword(email)
+                                            result.fold(
+                                                onSuccess = {
+                                                    Toast.makeText(this@MainActivity, "If the account exists, password reset instructions have been sent.", Toast.LENGTH_LONG).show()
+                                                },
+                                                onFailure = { error ->
+                                                    Toast.makeText(
+                                                        this@MainActivity,
+                                                        error.message ?: "Could not send password reset email.",
+                                                        Toast.LENGTH_LONG
+                                                    ).show()
+                                                }
+                                            )
                                         }
                                     },
                                     onGuestClick = { viewModel.continueAsGuest() },
