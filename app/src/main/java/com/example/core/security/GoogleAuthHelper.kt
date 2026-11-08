@@ -19,7 +19,7 @@ data class GoogleSignInResult(val idToken: String, val rawNonce: String)
 
 sealed class GoogleAuthException(message: String, cause: Throwable? = null) : Exception(message, cause) {
     class Cancelled(message: String = "Google Sign-In was cancelled by user") : GoogleAuthException(message)
-    class NoCredentials(message: String = "No Google account is available. Add an account in Android Settings or try again.") : GoogleAuthException(message)
+    class NoCredentials(message: String = "No Google account found. Add an account in Android Settings or try again.") : GoogleAuthException(message)
     class ConfigurationError(message: String, cause: Throwable? = null) : GoogleAuthException(message, cause)
     class Other(message: String, cause: Throwable? = null) : GoogleAuthException(message, cause)
 }
