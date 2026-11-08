@@ -1,5 +1,6 @@
 package com.example.feature.auth
 
+import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -353,7 +354,7 @@ fun LoginScreen(
             TribePrimaryButton(
                 text = stringResource(R.string.auth_login),
                 onClick = { onLoginClick(email, password) },
-                enabled = email.isNotBlank() && password.length >= 6,
+                enabled = Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches() && password.length >= 6,
                 isLoading = isLoading,
                 modifier = Modifier.fillMaxWidth(),
                 testTag = "login_submit_btn"
@@ -423,15 +424,17 @@ fun LoginScreen(
                     onValueChange = { resetEmail = it },
                     label = { Text(stringResource(R.string.auth_email)) },
                     singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     modifier = Modifier.fillMaxWidth()
                 )
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        onForgotPasswordClick(resetEmail)
+                        onForgotPasswordClick(resetEmail.trim())
                         showForgotDialog = false
                     },
+                    enabled = Patterns.EMAIL_ADDRESS.matcher(resetEmail.trim()).matches(),
                     colors = ButtonDefaults.buttonColors(containerColor = TribePrimary)
                 ) {
                     Text(stringResource(R.string.auth_reset_link))
@@ -460,7 +463,7 @@ fun RegisterScreen(
     var passwordVisible by remember { mutableStateOf(false) }
 
     val isInputValid = fullName.isNotBlank() &&
-            email.isNotBlank() &&
+            Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches() &&
             password.length >= 6 &&
             password == confirmPassword
 
