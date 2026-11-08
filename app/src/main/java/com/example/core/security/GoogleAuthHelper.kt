@@ -13,7 +13,7 @@ import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import java.security.MessageDigest
 import java.security.SecureRandom
-import java.util.Base64
+import android.util.Base64
 
 data class GoogleSignInResult(val idToken: String, val rawNonce: String)
 
@@ -30,7 +30,7 @@ class GoogleAuthHelper(private val context: Context) {
     fun generateNonce(): Pair<String, String> {
         val bytes = ByteArray(32)
         SecureRandom().nextBytes(bytes)
-        val rawNonce = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
+        val rawNonce = Base64.encodeToString(bytes, Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING)
         val digest = MessageDigest.getInstance("SHA-256").digest(rawNonce.toByteArray(Charsets.UTF_8))
         val hashedNonce = digest.joinToString("") { "%02x".format(it) }
         return rawNonce to hashedNonce
