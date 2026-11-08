@@ -27,8 +27,21 @@ jobs:
         run: chmod +x gradlew 2>/dev/null || true
 
       - name: Prepare environment configuration
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          GOOGLE_WEB_CLIENT_ID: ${{ vars.GOOGLE_WEB_CLIENT_ID }}
         run: |
           cp .env.example .env
+          if [ -n "$SUPABASE_URL" ]; then
+            sed -i "s|^SUPABASE_URL=.*|SUPABASE_URL=$SUPABASE_URL|" .env
+          fi
+          if [ -n "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            sed -i "s|^SUPABASE_PUBLISHABLE_KEY=.*|SUPABASE_PUBLISHABLE_KEY=$SUPABASE_PUBLISHABLE_KEY|" .env
+          fi
+          if [ -n "$GOOGLE_WEB_CLIENT_ID" ]; then
+            sed -i "s|^GOOGLE_WEB_CLIENT_ID=.*|GOOGLE_WEB_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID|" .env
+          fi
 
       - name: Run Unit & Robolectric Tests
         run: gradle :app:testDebugUnitTest --no-daemon
@@ -42,6 +55,8 @@ jobs:
             -keypass android \
             -dname "CN=Android Debug,O=Android,C=US" \
             -keyalg RSA -keysize 2048 -validity 10000
+          echo "CI debug signing certificate SHA-1 (add to Google Android OAuth client if testing Google Sign-In):"
+          keytool -list -v -keystore debug.keystore -storepass android -alias androiddebugkey | grep "SHA1:"
 
       - name: Build Debug APK
         run: gradle :app:assembleDebug --no-daemon
