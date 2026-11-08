@@ -1,0 +1,104 @@
+<resources>
+    <string name="app_name">TRIBE</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">হোম</string>
+    <string name="nav_my_plans">আমার ট্রিপ</string>
+    <string name="nav_explore">এক্সপ্লোর</string>
+    <string name="nav_profile">প্রোফাইল</string>
+    <string name="create_new_plan">নতুন প্ল্যান তৈরি করুন</string>
+
+    <!-- Auth - Kept in English as required -->
+    <string name="auth_welcome_title">Welcome Back!</string>
+    <string name="auth_welcome_subtitle">Sign in to continue your journey</string>
+    <string name="auth_tagline">Discover. Plan. Travel.</string>
+    <string name="auth_slogan">Travel • Plan • Explore • Together</string>
+    <string name="auth_google_signin">Continue with Google</string>
+    <string name="auth_or">or</string>
+    <string name="auth_email">Email Address</string>
+    <string name="auth_password">Password</string>
+    <string name="auth_confirm_password">Confirm Password</string>
+    <string name="auth_full_name">Full Name</string>
+    <string name="auth_login">Login</string>
+    <string name="auth_register">Register</string>
+    <string name="auth_forgot_password">Forgot Password?</string>
+    <string name="auth_dont_have_account">Don\'t have an account? </string>
+    <string name="auth_already_have_account">Already have an account? </string>
+    <string name="auth_create_account">Create Account</string>
+    <string name="auth_reset_link">Send Reset Link</string>
+    <string name="auth_skip_guest">Explore as Guest</string>
+
+    <!-- Home -->
+    <string name="home_greeting">হ্যালো, পর্যটক! 👋</string>
+    <string name="home_question">আজ আপনি কোথায় যেতে চান?</string>
+    <string name="search_destinations_hint">গন্তব্য খুঁজুন...</string>
+    <string name="popular_destinations">জনপ্রিয় গন্তব্য</string>
+    <string name="your_plans">আপনার ভ্রমণসমূহ</string>
+    <string name="see_all">সবগুলো দেখুন</string>
+    <string name="empty_plans_title">এখনো কোনো ট্রিপ পরিকল্পিত হয়নি</string>
+    <string name="empty_plans_subtitle">আপনার দলের সাথে একটি অবিস্মরণীয় ভ্রমণের পরিকল্পনা করুন!</string>
+
+    <!-- Explore -->
+    <string name="explore_title">এক্সপ্লোর</string>
+    <string name="search_tours_hint">ট্যুর খুঁজুন...</string>
+    <string name="filter_all">সকল</string>
+    <string name="filter_popular">জনপ্রিয়</string>
+    <string name="filter_nearby">নিকটবর্তী</string>
+    <string name="filter_adventure">অ্যাডভেঞ্চার</string>
+    <string name="filter_beach">সৈকত</string>
+    <string name="filter_heritage">ঐতিহ্য</string>
+
+    <!-- Plans & Details -->
+    <string name="tab_upcoming">আসন্ন</string>
+    <string name="tab_ongoing">চলমান</string>
+    <string name="tab_completed">সম্পন্ন</string>
+    <string name="trip_details">ট্রিপের বিবরণ</string>
+    <string name="tab_overview">ওভারভিউ</string>
+    <string name="tab_itinerary">আইটিনারি</string>
+    <string name="tab_expenses">খরচ</string>
+    <string name="tab_members">সদস্যগণ</string>
+    <string name="tab_checklist">চেকলিস্ট</string>
+    <string name="share">শেয়ার</string>
+    <string name="view_itinerary">আইটিনারি দেখুন</string>
+    <string name="group_members">গ্রুপ সদস্য</string>
+    <string name="invite_member">সদস্য আমন্ত্রণ</string>
+
+    <!-- Expenses -->
+    <string name="expenses_title">খরচসমূহ</string>
+    <string name="total_expense">মোট খরচ</string>
+    <string name="your_share">আপনার অংশ</string>
+    <string name="filter_you_paid">আপনার পরিশোধিত</string>
+    <string name="filter_others">অন্যান্য</string>
+    <string name="add_expense">খরচ যোগ করুন</string>
+    <string name="settle_up">হিসাব মেটান</string>
+    <string name="currency_symbol">৳</string>
+    <string name="expense_title">বিবরণ</string>
+    <string name="expense_amount">পরিমাণ (৳)</string>
+    <string name="expense_category">ক্যাটেগরি</string>
+    <string name="paid_by">পরিশোধ করেছেন</string>
+
+    <!-- Profile & Settings -->
+    <string name="profile_title">প্রোফাইল</string>
+    <string name="my_profile">আমার প্রোফাইল</string>
+    <string name="settings">সেটিংস</string>
+    <string name="language">ভাষা</string>
+    <string name="theme">থিম</string>
+    <string name="theme_system">সিস্টেম</string>
+    <string name="theme_light">লাইট</string>
+    <string name="theme_dark">ডার্ক</string>
+    <string name="about_tribe">TRIBE সম্পর্কে</string>
+    <string name="help_support">সাহায্য ও সহায়তা</string>
+    <string name="logout">লগআউট</string>
+    <string name="saved_tours">সংরক্ষিত ট্যুর</string>
+    <string name="notifications">বিজ্ঞপ্তি</string>
+    <string name="mark_all_read">সব পঠিত চিহ্নিত করুন</string>
+    <string name="no_notifications">কোনো নতুন বিজ্ঞপ্তি নেই</string>
+
+    <!-- Dialogs & General -->
+    <string name="cancel">বাতিল</string>
+    <string name="save">সংরক্ষণ করুন</string>
+    <string name="confirm">নিশ্চিত করুন</string>
+    <string name="delete">মুছে ফেলুন</string>
+    <string name="retry">পুনরায় চেষ্টা করুন</string>
+    <string name="network_error">সংযোগ করা যায়নি। অনুগ্রহ করে ইন্টারনেট সংযোগ পরীক্ষা করুন।</string>
+</resources>

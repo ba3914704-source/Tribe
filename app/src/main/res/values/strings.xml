@@ -1,0 +1,104 @@
+<resources>
+    <string name="app_name">TRIBE</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_my_plans">My Plans</string>
+    <string name="nav_explore">Explore</string>
+    <string name="nav_profile">Profile</string>
+    <string name="create_new_plan">Create New Plan</string>
+
+    <!-- Auth -->
+    <string name="auth_welcome_title">Welcome Back!</string>
+    <string name="auth_welcome_subtitle">Sign in to continue your journey</string>
+    <string name="auth_tagline">Discover. Plan. Travel.</string>
+    <string name="auth_slogan">Travel • Plan • Explore • Together</string>
+    <string name="auth_google_signin">Continue with Google</string>
+    <string name="auth_or">or</string>
+    <string name="auth_email">Email Address</string>
+    <string name="auth_password">Password</string>
+    <string name="auth_confirm_password">Confirm Password</string>
+    <string name="auth_full_name">Full Name</string>
+    <string name="auth_login">Login</string>
+    <string name="auth_register">Register</string>
+    <string name="auth_forgot_password">Forgot Password?</string>
+    <string name="auth_dont_have_account">Don\'t have an account? </string>
+    <string name="auth_already_have_account">Already have an account? </string>
+    <string name="auth_create_account">Create Account</string>
+    <string name="auth_reset_link">Send Reset Link</string>
+    <string name="auth_skip_guest">Explore as Guest</string>
+
+    <!-- Home -->
+    <string name="home_greeting">Hello, Traveler! 👋</string>
+    <string name="home_question">Where do you want to go today?</string>
+    <string name="search_destinations_hint">Search destinations...</string>
+    <string name="popular_destinations">Popular Destinations</string>
+    <string name="your_plans">Your Plans</string>
+    <string name="see_all">See All</string>
+    <string name="empty_plans_title">No trips planned yet</string>
+    <string name="empty_plans_subtitle">Plan an unforgettable journey with your tribe!</string>
+
+    <!-- Explore -->
+    <string name="explore_title">Explore</string>
+    <string name="search_tours_hint">Search tours...</string>
+    <string name="filter_all">All</string>
+    <string name="filter_popular">Popular</string>
+    <string name="filter_nearby">Nearby</string>
+    <string name="filter_adventure">Adventure</string>
+    <string name="filter_beach">Beach</string>
+    <string name="filter_heritage">Heritage</string>
+
+    <!-- Plans & Details -->
+    <string name="tab_upcoming">Upcoming</string>
+    <string name="tab_ongoing">Ongoing</string>
+    <string name="tab_completed">Completed</string>
+    <string name="trip_details">Trip Details</string>
+    <string name="tab_overview">Overview</string>
+    <string name="tab_itinerary">Itinerary</string>
+    <string name="tab_expenses">Expenses</string>
+    <string name="tab_members">Members</string>
+    <string name="tab_checklist">Checklist</string>
+    <string name="share">Share</string>
+    <string name="view_itinerary">View Itinerary</string>
+    <string name="group_members">Group Members</string>
+    <string name="invite_member">Invite Member</string>
+
+    <!-- Expenses -->
+    <string name="expenses_title">Expenses</string>
+    <string name="total_expense">Total Expense</string>
+    <string name="your_share">Your Share</string>
+    <string name="filter_you_paid">You Paid</string>
+    <string name="filter_others">Others</string>
+    <string name="add_expense">Add Expense</string>
+    <string name="settle_up">Settle Up</string>
+    <string name="currency_symbol">৳</string>
+    <string name="expense_title">Title</string>
+    <string name="expense_amount">Amount (৳)</string>
+    <string name="expense_category">Category</string>
+    <string name="paid_by">Paid by</string>
+
+    <!-- Profile & Settings -->
+    <string name="profile_title">Profile</string>
+    <string name="my_profile">My Profile</string>
+    <string name="settings">Settings</string>
+    <string name="language">Language</string>
+    <string name="theme">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="about_tribe">About TRIBE</string>
+    <string name="help_support">Help &amp; Support</string>
+    <string name="logout">Logout</string>
+    <string name="saved_tours">Saved Tours</string>
+    <string name="notifications">Notifications</string>
+    <string name="mark_all_read">Mark all as read</string>
+    <string name="no_notifications">No notifications yet</string>
+
+    <!-- Dialogs & General -->
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="confirm">Confirm</string>
+    <string name="delete">Delete</string>
+    <string name="retry">Retry</string>
+    <string name="network_error">Unable to connect. Please check your network connection.</string>
+</resources>

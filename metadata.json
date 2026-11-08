@@ -1,0 +1,6 @@
+{
+  "name": "TRIBE",
+  "description": "Modern travel planning and group travel management application to discover destinations, organize group trips, and split expenses.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
