@@ -2,7 +2,7 @@ name: Android CI & APK Build
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "fix/auth-and-session" ]
   pull_request:
     branches: [ "main", "master" ]
   workflow_dispatch:
@@ -27,11 +27,67 @@ jobs:
         run: chmod +x gradlew 2>/dev/null || true
 
       - name: Prepare environment configuration
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          GOOGLE_WEB_CLIENT_ID: ${{ vars.GOOGLE_WEB_CLIENT_ID }}
         run: |
           cp .env.example .env
+          if [ -n "$SUPABASE_URL" ]; then
+            sed -i "s|^SUPABASE_URL=.*|SUPABASE_URL=$SUPABASE_URL|" .env
+          fi
+          if [ -n "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            sed -i "s|^SUPABASE_PUBLISHABLE_KEY=.*|SUPABASE_PUBLISHABLE_KEY=$SUPABASE_PUBLISHABLE_KEY|" .env
+          fi
+          if [ -n "$GOOGLE_WEB_CLIENT_ID" ]; then
+            sed -i "s|^GOOGLE_WEB_CLIENT_ID=.*|GOOGLE_WEB_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID|" .env
+          fi
+
+      - name: Validate required app configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          SUPABASE_URL_VALUE="$(sed -n 's/^SUPABASE_URL=//p' .env | head -n1)"
+          SUPABASE_KEY_VALUE="$(sed -n 's/^SUPABASE_PUBLISHABLE_KEY=//p' .env | head -n1)"
+          GOOGLE_CLIENT_VALUE="$(sed -n 's/^GOOGLE_WEB_CLIENT_ID=//p' .env | head -n1)"
+          if [[ ! "$SUPABASE_URL_VALUE" =~ ^https://[a-z0-9-]+\.supabase\.co$ ]]; then
+            echo "::error::SUPABASE_URL is missing or invalid in GitHub Actions Variables."
+            exit 1
+          fi
+          if [[ -z "$SUPABASE_KEY_VALUE" || "$SUPABASE_KEY_VALUE" == *placeholder* ]]; then
+            echo "::error::SUPABASE_PUBLISHABLE_KEY is missing in GitHub Actions Secrets."
+            exit 1
+          fi
+          if [[ ! "$GOOGLE_CLIENT_VALUE" =~ ^[0-9]+-[A-Za-z0-9_-]+\.apps\.googleusercontent\.com$ ]]; then
+            echo "::error::GOOGLE_WEB_CLIENT_ID is missing or invalid in GitHub Actions Variables."
+            exit 1
+          fi
+          echo "Required Supabase and Google client configuration is present."
 
       - name: Run Unit & Robolectric Tests
         run: gradle :app:testDebugUnitTest --no-daemon
+
+      - name: Restore persistent TRIBE debug signing key
+        env:
+          TRIBE_DEBUG_KEYSTORE_BASE64: ${{ secrets.TRIBE_DEBUG_KEYSTORE_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$TRIBE_DEBUG_KEYSTORE_BASE64" ]]; then
+            echo "::error::Add the TRIBE_DEBUG_KEYSTORE_BASE64 repository secret before building APKs."
+            exit 1
+          fi
+          printf '%s' "$TRIBE_DEBUG_KEYSTORE_BASE64" | base64 --decode > debug.keystore
+          keytool -list -v -keystore debug.keystore -storepass android -alias androiddebugkey >/dev/null
+          ACTUAL_SHA1="$(keytool -list -v -keystore debug.keystore -storepass android -alias androiddebugkey | awk -F': ' '/SHA1:/{print $2; exit}')"
+          EXPECTED_SHA1="5A:84:44:51:BB:5C:6A:92:43:60:24:ED:8A:5A:F0:D5:2F:36:06:DC"
+          if [[ "$ACTUAL_SHA1" != "$EXPECTED_SHA1" ]]; then
+            echo "::error::TRIBE debug signing key changed. Refusing to build an APK that could conflict with previously distributed builds."
+            echo "::error::Expected SHA-1: $EXPECTED_SHA1"
+            echo "::error::Actual SHA-1: $ACTUAL_SHA1"
+            exit 1
+          fi
+          echo "Verified persistent TRIBE debug signing certificate SHA-1: $ACTUAL_SHA1"
 
       - name: Build Debug APK
         run: gradle :app:assembleDebug --no-daemon

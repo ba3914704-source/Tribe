@@ -8,7 +8,6 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
@@ -18,29 +17,18 @@ class SupabaseAuthInterceptor(
     private val publishableKey: String
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
-        val originalRequest = chain.request()
-        val requestBuilder = originalRequest.newBuilder()
+        val requestBuilder = chain.request().newBuilder()
+        if (publishableKey.isNotBlank()) requestBuilder.header("apikey", publishableKey)
 
-        // Always include the Supabase Publishable Key in the 'apikey' header
-        if (publishableKey.isNotBlank()) {
-            requestBuilder.header("apikey", publishableKey)
-        }
-
-        // Only attach Authorization Bearer if an authenticated user session access token exists
         val accessToken = runBlocking { sessionManager.getAccessToken() }
-        if (!accessToken.isNullOrBlank()) {
-            requestBuilder.header("Authorization", "Bearer $accessToken")
-        }
+        if (!accessToken.isNullOrBlank()) requestBuilder.header("Authorization", "Bearer $accessToken")
 
         return chain.proceed(requestBuilder.build())
     }
 }
 
 object SupabaseNetworkProvider {
-
-    private val moshi: Moshi = Moshi.Builder()
-        .addLast(KotlinJsonAdapterFactory())
-        .build()
+    private val moshi: Moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
 
     fun createAuthApi(
         baseUrl: String = BuildConfig.SUPABASE_URL.ifBlank { "https://cididsanututlefebehw.supabase.co" },
@@ -48,22 +36,17 @@ object SupabaseNetworkProvider {
         sessionManager: SessionManager
     ): SupabaseAuthApi {
         val formattedBaseUrl = if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/"
-        val okHttpClient = OkHttpClient.Builder()
+        val client = OkHttpClient.Builder()
             .connectTimeout(20, TimeUnit.SECONDS)
             .readTimeout(20, TimeUnit.SECONDS)
             .addInterceptor(SupabaseAuthInterceptor(sessionManager, publishableKey))
-            .addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            })
             .build()
-
-        val retrofit = Retrofit.Builder()
+        return Retrofit.Builder()
             .baseUrl(formattedBaseUrl)
-            .client(okHttpClient)
+            .client(client)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
-
-        return retrofit.create(SupabaseAuthApi::class.java)
+            .create(SupabaseAuthApi::class.java)
     }
 
     fun createRestApi(
@@ -72,21 +55,16 @@ object SupabaseNetworkProvider {
         sessionManager: SessionManager
     ): SupabaseRestApi {
         val formattedBaseUrl = if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/"
-        val okHttpClient = OkHttpClient.Builder()
+        val client = OkHttpClient.Builder()
             .connectTimeout(20, TimeUnit.SECONDS)
             .readTimeout(20, TimeUnit.SECONDS)
             .addInterceptor(SupabaseAuthInterceptor(sessionManager, publishableKey))
-            .addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            })
             .build()
-
-        val retrofit = Retrofit.Builder()
+        return Retrofit.Builder()
             .baseUrl(formattedBaseUrl)
-            .client(okHttpClient)
+            .client(client)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
-
-        return retrofit.create(SupabaseRestApi::class.java)
+            .create(SupabaseRestApi::class.java)
     }
 }
