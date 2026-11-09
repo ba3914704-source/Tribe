@@ -67,16 +67,19 @@ jobs:
       - name: Run Unit & Robolectric Tests
         run: gradle :app:testDebugUnitTest --no-daemon
 
-      - name: Create ephemeral CI debug signing key
+      - name: Restore persistent TRIBE debug signing key
+        env:
+          TRIBE_DEBUG_KEYSTORE_BASE64: ${{ secrets.TRIBE_DEBUG_KEYSTORE_BASE64 }}
+        shell: bash
         run: |
-          keytool -genkeypair -v \
-            -keystore debug.keystore \
-            -storepass android \
-            -alias androiddebugkey \
-            -keypass android \
-            -dname "CN=Android Debug,O=Android,C=US" \
-            -keyalg RSA -keysize 2048 -validity 10000
-          echo "CI debug signing certificate SHA-1 (add to Google Android OAuth client if testing Google Sign-In):"
+          set -euo pipefail
+          if [[ -z "$TRIBE_DEBUG_KEYSTORE_BASE64" ]]; then
+            echo "::error::Add the TRIBE_DEBUG_KEYSTORE_BASE64 repository secret before building APKs."
+            exit 1
+          fi
+          printf '%s' "$TRIBE_DEBUG_KEYSTORE_BASE64" | base64 --decode > debug.keystore
+          keytool -list -v -keystore debug.keystore -storepass android -alias androiddebugkey >/dev/null
+          echo "Persistent TRIBE debug signing certificate SHA-1 (Google Android OAuth):"
           keytool -list -v -keystore debug.keystore -storepass android -alias androiddebugkey | grep "SHA1:"
 
       - name: Build Debug APK
