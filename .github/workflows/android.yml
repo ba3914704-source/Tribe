@@ -79,8 +79,15 @@ jobs:
           fi
           printf '%s' "$TRIBE_DEBUG_KEYSTORE_BASE64" | base64 --decode > debug.keystore
           keytool -list -v -keystore debug.keystore -storepass android -alias androiddebugkey >/dev/null
-          echo "Persistent TRIBE debug signing certificate SHA-1 (Google Android OAuth):"
-          keytool -list -v -keystore debug.keystore -storepass android -alias androiddebugkey | grep "SHA1:"
+          ACTUAL_SHA1="$(keytool -list -v -keystore debug.keystore -storepass android -alias androiddebugkey | awk -F': ' '/SHA1:/{print $2; exit}')"
+          EXPECTED_SHA1="5A:84:44:51:BB:5C:6A:92:43:60:24:ED:8A:5A:F0:D5:2F:36:06:DC"
+          if [[ "$ACTUAL_SHA1" != "$EXPECTED_SHA1" ]]; then
+            echo "::error::TRIBE debug signing key changed. Refusing to build an APK that could conflict with previously distributed builds."
+            echo "::error::Expected SHA-1: $EXPECTED_SHA1"
+            echo "::error::Actual SHA-1: $ACTUAL_SHA1"
+            exit 1
+          fi
+          echo "Verified persistent TRIBE debug signing certificate SHA-1: $ACTUAL_SHA1"
 
       - name: Build Debug APK
         run: gradle :app:assembleDebug --no-daemon
