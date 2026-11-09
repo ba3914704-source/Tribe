@@ -2,7 +2,7 @@ name: Android CI & APK Build
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "fix/auth-and-session" ]
   pull_request:
     branches: [ "main", "master" ]
   workflow_dispatch:
@@ -42,6 +42,27 @@ jobs:
           if [ -n "$GOOGLE_WEB_CLIENT_ID" ]; then
             sed -i "s|^GOOGLE_WEB_CLIENT_ID=.*|GOOGLE_WEB_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID|" .env
           fi
+
+      - name: Validate required app configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          SUPABASE_URL_VALUE="$(sed -n 's/^SUPABASE_URL=//p' .env | head -n1)"
+          SUPABASE_KEY_VALUE="$(sed -n 's/^SUPABASE_PUBLISHABLE_KEY=//p' .env | head -n1)"
+          GOOGLE_CLIENT_VALUE="$(sed -n 's/^GOOGLE_WEB_CLIENT_ID=//p' .env | head -n1)"
+          if [[ ! "$SUPABASE_URL_VALUE" =~ ^https://[a-z0-9-]+\.supabase\.co$ ]]; then
+            echo "::error::SUPABASE_URL is missing or invalid in GitHub Actions Variables."
+            exit 1
+          fi
+          if [[ -z "$SUPABASE_KEY_VALUE" || "$SUPABASE_KEY_VALUE" == *placeholder* ]]; then
+            echo "::error::SUPABASE_PUBLISHABLE_KEY is missing in GitHub Actions Secrets."
+            exit 1
+          fi
+          if [[ ! "$GOOGLE_CLIENT_VALUE" =~ ^[0-9]+-[A-Za-z0-9_-]+\.apps\.googleusercontent\.com$ ]]; then
+            echo "::error::GOOGLE_WEB_CLIENT_ID is missing or invalid in GitHub Actions Variables."
+            exit 1
+          fi
+          echo "Required Supabase and Google client configuration is present."
 
       - name: Run Unit & Robolectric Tests
         run: gradle :app:testDebugUnitTest --no-daemon
