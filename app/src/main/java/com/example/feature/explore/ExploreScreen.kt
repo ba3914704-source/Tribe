@@ -42,7 +42,7 @@ fun ExploreScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("All") }
 
-    val categories = listOf("All", "Popular", "Nearby", "Adventure", "Beach", "Heritage")
+    val categories = listOf("All", "Upcoming", "Completed")
 
     val filteredTours = remember(searchQuery, selectedCategory, tours) {
         tours.filter { tour ->
@@ -51,11 +51,8 @@ fun ExploreScreen(
                     tour.destinationName.contains(searchQuery, ignoreCase = true)
 
             val matchesCategory = when (selectedCategory) {
-                "All" -> true
-                "Popular" -> tour.rating >= 4.8
-                "Adventure" -> tour.destinationName.contains("Bandarban", ignoreCase = true) || tour.destinationName.contains("Sajek", ignoreCase = true)
-                "Beach" -> tour.destinationName.contains("Kuakata", ignoreCase = true) || tour.destinationName.contains("Cox", ignoreCase = true) || tour.destinationName.contains("Saint", ignoreCase = true)
-                "Heritage" -> tour.destinationName.contains("Sundarbans", ignoreCase = true)
+                "Upcoming" -> tour.status == com.example.domain.model.TourStatus.UPCOMING
+                "Completed" -> tour.status == com.example.domain.model.TourStatus.COMPLETED
                 else -> true
             }
 
@@ -220,33 +217,6 @@ fun TourCardItem(
                     )
             )
 
-            // Rating Badge (Top Right)
-            Surface(
-                color = Color.White.copy(alpha = 0.92f),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(14.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = null,
-                        tint = Color(0xFFFFB300),
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(3.dp))
-                    Text(
-                        text = "%.1f".format(tour.rating),
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = Color.Black
-                    )
-                }
-            }
-
             // Save / Bookmark button (Bottom Right)
             IconButton(
                 onClick = onSaveClick,
@@ -279,11 +249,17 @@ fun TourCardItem(
                     color = Color.White
                 )
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "${tour.durationDays} days • ${tour.travelersCount} travelers",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.9f)
-                )
+                val metadata = buildList {
+                    if (tour.durationDays > 0) add("${tour.durationDays} days")
+                    if (tour.totalMembers > 0) add("${tour.totalMembers} members")
+                }.joinToString(" • ")
+                if (metadata.isNotEmpty()) {
+                    Text(
+                        text = metadata,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
+                }
             }
         }
     }

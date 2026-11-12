@@ -88,10 +88,9 @@ class MainActivity : ComponentActivity() {
                                             if (clientId.isBlank() || clientId.contains("placeholder")) {
                                                 Toast.makeText(
                                                     this@MainActivity,
-                                                    "Google Web Client ID placeholder detected. Using Google sign-in demo flow.",
-                                                    Toast.LENGTH_SHORT
+                                                    "Google sign-in is not configured. Add GOOGLE_WEB_CLIENT_ID to the app secrets.",
+                                                    Toast.LENGTH_LONG
                                                 ).show()
-                                                viewModel.onGoogleSignInSuccess("sample_id_token", "sample_nonce")
                                             } else {
                                                 val result = viewModel.googleAuthHelper.signInWithGoogle(
                                                     activityContext = this@MainActivity,
@@ -163,7 +162,7 @@ class MainActivity : ComponentActivity() {
                                         when (uiState.currentTab) {
                                             NavigationTab.HOME -> {
                                                 HomeScreen(
-                                                    userName = uiState.session?.fullName ?: "Traveler",
+                                                    userName = uiState.session?.fullName?.takeIf(String::isNotBlank) ?: "Traveler",
                                                     destinations = uiState.destinations,
                                                     userPlans = uiState.tours,
                                                     onSearchClick = { viewModel.selectTab(NavigationTab.EXPLORE) },
@@ -205,8 +204,8 @@ class MainActivity : ComponentActivity() {
                                             }
                                             NavigationTab.PROFILE -> {
                                                 ProfileScreen(
-                                                    userName = uiState.session?.fullName ?: "Dhaka Rider",
-                                                    userEmail = uiState.session?.email ?: "dh.rider@gmail.com",
+                                                    userName = uiState.session?.fullName ?: "Traveler",
+                                                    userEmail = uiState.session?.email.orEmpty(),
                                                     currentTheme = uiState.themeMode,
                                                     currentLanguage = uiState.language,
                                                     onThemeChanged = { viewModel.setThemeMode(it) },
@@ -279,6 +278,8 @@ class MainActivity : ComponentActivity() {
                     if (uiState.isCreatePlanOpen) {
                         CreatePlanSheet(
                             onDismiss = { viewModel.setCreatePlanSheetOpen(false) },
+                            errorMessage = uiState.createPlanError,
+                            isLoading = uiState.isLoading,
                             onCreatePlan = { title, dest, start, end, budget, isPub, desc ->
                                 viewModel.createPlan(title, dest, start, end, budget, isPub, desc)
                             }

@@ -3,6 +3,7 @@ package com.example.domain.model
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
 import java.util.Locale
 
 data class UserSession(
@@ -44,7 +45,12 @@ data class Tour(
     val isSaved: Boolean = false
 ) {
     val durationDays: Int
-        get() = 3 // Standard default or computed from dates
+        get() = runCatching {
+            val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.US).apply { isLenient = false }
+            val start = formatter.parse(startDate) ?: return 0
+            val end = formatter.parse(endDate) ?: return 0
+            ((end.time - start.time) / 86_400_000L + 1).toInt().coerceAtLeast(0)
+        }.getOrDefault(0)
 }
 
 enum class TourStatus {

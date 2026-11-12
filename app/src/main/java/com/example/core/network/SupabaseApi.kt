@@ -55,8 +55,9 @@ interface SupabaseRestApi {
     // Tours / Plans
     @GET("rest/v1/tours")
     suspend fun getTours(
-        @Query("select") select: String = "*",
-        @Query("order") order: String = "start_date.asc"
+        @Query("select") select: String = "*,public_tour_stats(active_member_count)",
+        @Query("order") order: String = "start_date.asc.nullslast",
+        @Query("limit") limit: Int = 50
     ): Response<List<TourDto>>
 
     @GET("rest/v1/tours")
@@ -101,7 +102,7 @@ interface SupabaseRestApi {
     suspend fun getItinerary(
         @Query("tour_id") tourId: String,
         @Query("select") select: String = "*",
-        @Query("order") order: String = "day_number.asc,time.asc"
+        @Query("order") order: String = "day_number.asc,starts_at.asc.nullslast"
     ): Response<List<TourItineraryDto>>
 
     @POST("rest/v1/tour_itinerary")
@@ -188,6 +189,13 @@ interface SupabaseRestApi {
     @Headers("Prefer: return=representation")
     suspend fun markNotificationRead(
         @Query("id") id: String,
+        @Body update: Map<String, Boolean>
+    ): Response<List<NotificationDto>>
+
+    @PATCH("rest/v1/notifications")
+    @Headers("Prefer: return=representation")
+    suspend fun markNotificationsRead(
+        @Query("user_id") userId: String,
         @Body update: Map<String, Boolean>
     ): Response<List<NotificationDto>>
 

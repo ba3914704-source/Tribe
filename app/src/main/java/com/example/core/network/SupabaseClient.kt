@@ -53,7 +53,7 @@ object SupabaseNetworkProvider {
             .readTimeout(20, TimeUnit.SECONDS)
             .addInterceptor(SupabaseAuthInterceptor(sessionManager, publishableKey))
             .addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
+                level = HttpLoggingInterceptor.Level.BASIC
             })
             .build()
 
@@ -77,7 +77,7 @@ object SupabaseNetworkProvider {
             .readTimeout(20, TimeUnit.SECONDS)
             .addInterceptor(SupabaseAuthInterceptor(sessionManager, publishableKey))
             .addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
+                level = HttpLoggingInterceptor.Level.BASIC
             })
             .build()
 

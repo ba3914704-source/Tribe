@@ -20,18 +20,22 @@ import com.example.R
 import com.example.core.designsystem.TribePrimaryButton
 import com.example.ui.theme.TribePrimary
 import java.math.BigDecimal
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePlanSheet(
     onDismiss: () -> Unit,
+    errorMessage: String? = null,
+    isLoading: Boolean = false,
     onCreatePlan: (title: String, destination: String, start: String, end: String, budget: BigDecimal, isPublic: Boolean, desc: String) -> Unit
 ) {
     var title by remember { mutableStateOf("") }
     var destination by remember { mutableStateOf("") }
-    var startDate by remember { mutableStateOf("Dec 20, 2024") }
-    var endDate by remember { mutableStateOf("Dec 23, 2024") }
-    var budgetStr by remember { mutableStateOf("15000") }
+    var startDate by remember { mutableStateOf("") }
+    var endDate by remember { mutableStateOf("") }
+    var budgetStr by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var isPublic by remember { mutableStateOf(false) }
 
@@ -114,7 +118,7 @@ fun CreatePlanSheet(
                 OutlinedTextField(
                     value = startDate,
                     onValueChange = { startDate = it },
-                    label = { Text("Start Date") },
+                    label = { Text("Start date (YYYY-MM-DD)") },
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier.weight(1f)
@@ -123,7 +127,7 @@ fun CreatePlanSheet(
                 OutlinedTextField(
                     value = endDate,
                     onValueChange = { endDate = it },
-                    label = { Text("End Date") },
+                    label = { Text("End date (YYYY-MM-DD)") },
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier.weight(1f)
@@ -185,22 +189,30 @@ fun CreatePlanSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            errorMessage?.let { message ->
+                Text(
+                    text = message,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
+
             // Create button
             TribePrimaryButton(
                 text = stringResource(R.string.confirm),
                 onClick = {
-                    val budget = budgetStr.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                    onCreatePlan(
-                        title.ifBlank { "$destination Trip" },
-                        destination.ifBlank { "Bandarban" },
-                        startDate,
-                        endDate,
-                        budget,
-                        isPublic,
-                        description
-                    )
+                    val budget = budgetStr.toBigDecimalOrNull()
+                    val start = startDate.trim()
+                    val end = endDate.trim()
+                    if (title.isNotBlank() && destination.isNotBlank() && isIsoDate(start) && isIsoDate(end) && end >= start && budget != null && budget >= BigDecimal.ZERO) {
+                        onCreatePlan(title.trim(), destination.trim(), start, end, budget, isPublic, description.trim())
+                    }
                 },
-                enabled = title.isNotBlank() || destination.isNotBlank(),
+                enabled = !isLoading && title.isNotBlank() && destination.isNotBlank() &&
+                    isIsoDate(startDate.trim()) && isIsoDate(endDate.trim()) && endDate.trim() >= startDate.trim() &&
+                    budgetStr.toBigDecimalOrNull()?.let { it >= BigDecimal.ZERO } == true,
+                isLoading = isLoading,
                 modifier = Modifier.fillMaxWidth(),
                 testTag = "submit_create_plan_btn"
             )
@@ -209,3 +221,9 @@ fun CreatePlanSheet(
         }
     }
 }
+
+private fun isIsoDate(value: String): Boolean = runCatching {
+    val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.US).apply { isLenient = false }
+    val parsed = formatter.parse(value) ?: return false
+    formatter.format(parsed) == value
+}.getOrDefault(false)

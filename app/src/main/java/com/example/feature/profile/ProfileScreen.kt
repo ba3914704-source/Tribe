@@ -92,7 +92,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = userName.ifBlank { "Dhaka Rider" },
+                text = userName.ifBlank { "Traveler" },
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -100,7 +100,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(2.dp))
 
             Text(
-                text = userEmail.ifBlank { "dh.rider@gmail.com" },
+                text = userEmail,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
