@@ -47,6 +47,7 @@ data class MainUiState(
     val selectedTourChecklist: List<ChecklistItem> = emptyList(),
     val selectedTourComments: List<TourComment> = emptyList(),
     val isCreatePlanOpen: Boolean = false,
+    val createPlanError: String? = null,
     val isLoading: Boolean = false,
     val authError: String? = null
 )
@@ -79,6 +80,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             } else current.currentScreen
                         } else current.currentScreen
                     )
+                }
+                if (session != null) {
+                    viewModelScope.launch {
+                        travelRepository.refreshData()
+                        travelRepository.refreshSavedTours(session.userId)
+                        travelRepository.refreshUserNotifications(session.userId)
+                    }
                 }
             }
         }
@@ -148,7 +156,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setCreatePlanSheetOpen(open: Boolean) {
-        _uiState.update { it.copy(isCreatePlanOpen = open) }
+        _uiState.update { it.copy(isCreatePlanOpen = open, createPlanError = null) }
     }
 
     // Auth methods
@@ -161,17 +169,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     _uiState.update { it.copy(isLoading = false, session = session, currentScreen = AppScreen.Main) }
                 },
                 onFailure = { error ->
-                    // For seamless testing, if Supabase project has not yet enabled email confirmation, allow demo sign-in
-                    val fallbackSession = UserSession(
-                        userId = "demo_user",
-                        email = email,
-                        fullName = email.substringBefore("@").replaceFirstChar { it.uppercase() },
-                        accessToken = "demo_token",
-                        refreshToken = null,
-                        avatarUrl = null
-                    )
-                    sessionManager.saveSession(fallbackSession)
-                    _uiState.update { it.copy(isLoading = false, session = fallbackSession, currentScreen = AppScreen.Main) }
+                    _uiState.update { it.copy(isLoading = false, authError = error.message ?: "Sign in failed") }
                 }
             )
         }
@@ -186,16 +184,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     _uiState.update { it.copy(isLoading = false, session = session, currentScreen = AppScreen.Main) }
                 },
                 onFailure = { error ->
-                    val fallbackSession = UserSession(
-                        userId = "new_user",
-                        email = email,
-                        fullName = fullName,
-                        accessToken = "demo_token",
-                        refreshToken = null,
-                        avatarUrl = null
-                    )
-                    sessionManager.saveSession(fallbackSession)
-                    _uiState.update { it.copy(isLoading = false, session = fallbackSession, currentScreen = AppScreen.Main) }
+                    _uiState.update { it.copy(isLoading = false, authError = error.message ?: "Account creation failed") }
                 }
             )
         }
@@ -243,11 +232,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val tour = travelRepository.getTourById(tourId)
             val members = travelRepository.getTourMembers(tourId)
             val itinerary = travelRepository.getItinerary(tourId)
-            val expenses = travelRepository.getExpenses(tourId)
+            val userId = _uiState.value.session?.userId
+            val expenses = travelRepository.getExpenses(tourId, userId)
             val summary = travelRepository.getExpenseSummary(tourId, _uiState.value.session?.fullName ?: "Me")
             val settlements = travelRepository.getSettlements(tourId)
             val checklist = travelRepository.getChecklist(tourId)
-            val comments = travelRepository.getTourComments(tourId)
+            val comments = travelRepository.getTourComments(tourId, _uiState.value.session?.userId)
 
             _uiState.update {
                 it.copy(
@@ -300,23 +290,50 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         description: String
     ) {
         viewModelScope.launch {
-            travelRepository.createPlan(title, destinationName, startDate, endDate, budget, isPublic, description)
-            _uiState.update { it.copy(isCreatePlanOpen = false) }
+            val ownerId = _uiState.value.session?.userId
+            if (ownerId.isNullOrBlank()) {
+                _uiState.update { it.copy(createPlanError = "Sign in to create and save a tour.") }
+                return@launch
+            }
+            _uiState.update { it.copy(isLoading = true, createPlanError = null) }
+            val result = travelRepository.createPlan(
+                ownerId,
+                title,
+                destinationName,
+                startDate,
+                endDate,
+                budget,
+                isPublic,
+                description
+            )
+            result.fold(
+                onSuccess = { tour ->
+                    _uiState.update { it.copy(isLoading = false, isCreatePlanOpen = false) }
+                    navigateTo(AppScreen.TripDetails(tour.id))
+                },
+                onFailure = { error ->
+                    _uiState.update {
+                        it.copy(isLoading = false, createPlanError = error.message ?: "Tour could not be saved")
+                    }
+                }
+            )
         }
     }
 
     fun addExpense(title: String, amount: BigDecimal, category: ExpenseCategory, payer: String) {
         val tourId = _uiState.value.selectedTour?.id ?: return
+        val userId = _uiState.value.session?.userId ?: return
         viewModelScope.launch {
-            travelRepository.addExpense(tourId, title, amount, category, payer, "current_user")
+            travelRepository.addExpense(tourId, userId, title, amount, category, payer, userId)
             loadTourDetails(tourId)
         }
     }
 
     fun addItineraryItem(day: Int, time: String, location: String, title: String) {
         val tourId = _uiState.value.selectedTour?.id ?: return
+        val userId = _uiState.value.session?.userId ?: return
         viewModelScope.launch {
-            travelRepository.addItineraryItem(tourId, day, time, location, title)
+            travelRepository.addItineraryItem(tourId, userId, day, time, location, title)
             loadTourDetails(tourId)
         }
     }
@@ -331,28 +348,30 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun addComment(text: String) {
         val tourId = _uiState.value.selectedTour?.id ?: return
-        val userName = _uiState.value.session?.fullName ?: "Traveler"
+        val userId = _uiState.value.session?.userId ?: return
         viewModelScope.launch {
-            travelRepository.addComment(tourId, userName, text)
+            travelRepository.addComment(tourId, userId, text)
             loadTourDetails(tourId)
         }
     }
 
     fun toggleSaveTour(tourId: String) {
         viewModelScope.launch {
-            travelRepository.toggleSaveTour(tourId)
+            travelRepository.toggleSaveTour(tourId, _uiState.value.session?.userId)
         }
     }
 
     fun markNotificationRead(id: String) {
+        val userId = _uiState.value.session?.userId ?: return
         viewModelScope.launch {
-            travelRepository.markNotificationRead(id)
+            travelRepository.markNotificationRead(userId, id)
         }
     }
 
     fun markAllNotificationsRead() {
+        val userId = _uiState.value.session?.userId ?: return
         viewModelScope.launch {
-            travelRepository.markAllNotificationsRead()
+            travelRepository.markAllNotificationsRead(userId)
         }
     }
 

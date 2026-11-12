@@ -146,7 +146,10 @@ fun TripDetailsScreen(
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "${tour.startDate} • ${tour.totalMembers} Members",
+                                    text = listOfNotNull(
+                                        tour.startDate.takeIf(String::isNotBlank),
+                                        tour.totalMembers.takeIf { it > 0 }?.let { "$it Members" }
+                                    ).joinToString(" • "),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = Color.White.copy(alpha = 0.9f)
                                 )
@@ -416,7 +419,7 @@ fun OverviewTabContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "${stringResource(R.string.group_members)} (${tour.totalMembers})",
+                text = if (tour.totalMembers > 0) "${stringResource(R.string.group_members)} (${tour.totalMembers})" else stringResource(R.string.group_members),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -433,15 +436,7 @@ fun OverviewTabContent(
             horizontalArrangement = Arrangement.spacedBy((-8).dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val displayMembers = if (members.isNotEmpty()) members else listOf(
-                TourMember("1", tour.id, "1", "owner", "accepted", "Dhaka Rider", null),
-                TourMember("2", tour.id, "2", "admin", "accepted", "Rahat", null),
-                TourMember("3", tour.id, "3", "member", "accepted", "Sifat", null),
-                TourMember("4", tour.id, "4", "member", "accepted", "Fahim", null),
-                TourMember("5", tour.id, "5", "member", "accepted", "Tanvir", null)
-            )
-
-            displayMembers.take(5).forEach { member ->
+            members.take(5).forEach { member ->
                 Box(
                     modifier = Modifier
                         .size(44.dp)
@@ -458,19 +453,21 @@ fun OverviewTabContent(
                 }
             }
 
-            // +1 pill
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "+1",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                )
+            val remainingMembers = members.size - 5
+            if (remainingMembers > 0) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "+$remainingMembers",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
             }
         }
 
@@ -498,8 +495,8 @@ fun ExpensesTabContent(
 
     val filteredExpenses = remember(selectedFilter, expenses) {
         when (selectedFilter) {
-            "You Paid" -> expenses.filter { it.paidByName.equals("Me", ignoreCase = true) || it.paidByName.contains("Dhaka", ignoreCase = true) }
-            "Others" -> expenses.filter { !it.paidByName.equals("Me", ignoreCase = true) && !it.paidByName.contains("Dhaka", ignoreCase = true) }
+            "You Paid" -> expenses.filter { it.paidByName.equals("You", ignoreCase = true) }
+            "Others" -> expenses.filter { !it.paidByName.equals("You", ignoreCase = true) }
             else -> expenses
         }
     }

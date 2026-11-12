@@ -1,5 +1,6 @@
 package com.example.data.remote.dto
 
+import java.math.BigDecimal
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
@@ -75,13 +76,11 @@ data class UpdateProfileDto(
 data class DestinationDto(
     val id: String,
     val name: String,
-    val division: String? = null,
-    val district: String? = null,
+    val country: String = "Bangladesh",
+    val region: String? = null,
     val description: String? = null,
     @Json(name = "image_url") val imageUrl: String? = null,
-    val rating: Double? = 4.8,
-    @Json(name = "is_featured") val isFeatured: Boolean? = false,
-    val category: String? = "Hills"
+    @Json(name = "is_featured") val isFeatured: Boolean? = false
 )
 
 // Tour / Plan DTO
@@ -94,27 +93,31 @@ data class TourDto(
     @Json(name = "destination_name") val destinationName: String? = null,
     @Json(name = "start_date") val startDate: String? = null,
     @Json(name = "end_date") val endDate: String? = null,
-    val status: String? = "upcoming", // upcoming, ongoing, completed
-    @Json(name = "is_public") val isPublic: Boolean? = true,
-    @Json(name = "creator_id") val creatorId: String? = null,
-    @Json(name = "image_url") val imageUrl: String? = null,
-    @Json(name = "estimated_budget") val estimatedBudget: Double? = 0.0,
-    @Json(name = "total_members") val totalMembers: Int? = 1,
-    val rating: Double? = 4.8,
-    @Json(name = "travelers_count") val travelersCount: String? = "1.2k+"
+    val status: String? = null,
+    val visibility: String? = null,
+    @Json(name = "owner_id") val creatorId: String? = null,
+    @Json(name = "cover_image_url") val imageUrl: String? = null,
+    @Json(name = "budget_estimate") val estimatedBudget: Double? = null,
+    @Json(name = "public_tour_stats") val memberStats: PublicTourStatsDto? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class PublicTourStatsDto(
+    @Json(name = "active_member_count") val activeMemberCount: Int? = null
 )
 
 @JsonClass(generateAdapter = true)
 data class CreateTourDto(
+    @Json(name = "owner_id") val ownerId: String,
     val title: String,
     val description: String? = null,
     @Json(name = "destination_name") val destinationName: String,
     @Json(name = "start_date") val startDate: String,
     @Json(name = "end_date") val endDate: String,
     val status: String = "upcoming",
-    @Json(name = "is_public") val isPublic: Boolean = false,
-    @Json(name = "estimated_budget") val estimatedBudget: Double = 0.0,
-    @Json(name = "image_url") val imageUrl: String? = null
+    val visibility: String = "private",
+    @Json(name = "budget_estimate") val estimatedBudget: Double = 0.0,
+    @Json(name = "cover_image_url") val imageUrl: String? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -152,9 +155,10 @@ data class TourItineraryDto(
     @Json(name = "tour_id") val tourId: String,
     @Json(name = "day_number") val dayNumber: Int,
     val title: String,
-    val time: String? = null,
+    @Json(name = "starts_at") val startsAt: String? = null,
     val location: String? = null,
-    val description: String? = null
+    val description: String? = null,
+    @Json(name = "created_by") val createdBy: String? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -162,9 +166,10 @@ data class CreateItineraryDto(
     @Json(name = "tour_id") val tourId: String,
     @Json(name = "day_number") val dayNumber: Int,
     val title: String,
-    val time: String? = null,
     val location: String? = null,
-    val description: String? = null
+    val description: String? = null,
+    @Json(name = "starts_at") val startsAt: String,
+    @Json(name = "created_by") val createdBy: String
 )
 
 // Expenses DTO
@@ -173,21 +178,20 @@ data class TourExpenseDto(
     val id: String,
     @Json(name = "tour_id") val tourId: String,
     val title: String,
-    val amount: Double,
-    val category: String? = "General",
-    @Json(name = "paid_by_name") val paidByName: String? = null,
-    @Json(name = "paid_by_id") val paidById: String? = null,
-    @Json(name = "created_at") val createdAt: String? = null
+    val amount: BigDecimal,
+    val category: String? = null,
+    @Json(name = "paid_by") val paidById: String,
+    @Json(name = "expense_date") val expenseDate: String? = null
 )
 
 @JsonClass(generateAdapter = true)
 data class CreateExpenseDto(
     @Json(name = "tour_id") val tourId: String,
+    @Json(name = "paid_by") val paidById: String,
     val title: String,
-    val amount: Double,
-    val category: String = "General",
-    @Json(name = "paid_by_name") val paidByName: String,
-    @Json(name = "paid_by_id") val paidById: String
+    val amount: BigDecimal,
+    val category: String,
+    val currency: String = "BDT"
 )
 
 @JsonClass(generateAdapter = true)
@@ -246,23 +250,21 @@ data class TourGuideDto(
 data class TourCommentDto(
     val id: String,
     @Json(name = "tour_id") val tourId: String,
-    @Json(name = "user_name") val userName: String,
-    @Json(name = "avatar_url") val avatarUrl: String? = null,
-    val comment: String,
+    @Json(name = "user_id") val userId: String,
+    val body: String,
     @Json(name = "created_at") val createdAt: String? = null
 )
 
 @JsonClass(generateAdapter = true)
 data class CreateCommentDto(
     @Json(name = "tour_id") val tourId: String,
-    @Json(name = "user_name") val userName: String,
-    val comment: String
+    @Json(name = "user_id") val userId: String,
+    val body: String
 )
 
 // Saved Tours DTO
 @JsonClass(generateAdapter = true)
 data class SavedTourDto(
-    val id: String,
     @Json(name = "tour_id") val tourId: String,
     @Json(name = "user_id") val userId: String,
     @Json(name = "created_at") val createdAt: String? = null
@@ -280,7 +282,7 @@ data class NotificationDto(
     val id: String,
     @Json(name = "user_id") val userId: String,
     val title: String,
-    val message: String,
+    val body: String? = null,
     @Json(name = "is_read") val isRead: Boolean? = false,
     @Json(name = "created_at") val createdAt: String? = null
 )

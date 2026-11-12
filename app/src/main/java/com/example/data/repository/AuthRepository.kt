@@ -32,19 +32,21 @@ class SupabaseAuthRepository(
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 val user = body.user
+                    ?: return Result.failure(Exception("Supabase did not return a user for this session"))
+                val accessToken = body.accessToken
+                    ?.takeIf(String::isNotBlank)
+                    ?: return Result.failure(Exception("Supabase did not return an access token"))
                 val session = UserSession(
-                    userId = user?.id ?: "user_default",
-                    email = user?.email ?: email,
-                    fullName = (user?.userMetadata?.get("full_name") as? String)
-                        ?: email.substringBefore("@").replaceFirstChar { it.uppercase() },
-                    accessToken = body.accessToken ?: "",
+                    userId = user.id,
+                    email = user.email ?: email,
+                    fullName = (user.userMetadata?.get("full_name") as? String).orEmpty(),
+                    accessToken = accessToken,
                     refreshToken = body.refreshToken,
-                    avatarUrl = user?.userMetadata?.get("avatar_url") as? String
+                    avatarUrl = user.userMetadata?.get("avatar_url") as? String
                 )
                 sessionManager.saveSession(session)
                 Result.success(session)
             } else {
-                // If demo or backend response is error, handle or map error
                 val errorMsg = response.errorBody()?.string() ?: "Authentication failed (${response.code()})"
                 Result.failure(Exception(errorMsg))
             }
@@ -69,11 +71,15 @@ class SupabaseAuthRepository(
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 val user = body.user
+                    ?: return Result.failure(Exception("Account created. Check your email to verify it before signing in."))
+                val accessToken = body.accessToken
+                    ?.takeIf(String::isNotBlank)
+                    ?: return Result.failure(Exception("Account created. Check your email to verify it before signing in."))
                 val session = UserSession(
-                    userId = user?.id ?: "user_new",
-                    email = user?.email ?: email,
-                    fullName = fullName.ifBlank { "Traveler" },
-                    accessToken = body.accessToken ?: "local_token_${System.currentTimeMillis()}",
+                    userId = user.id,
+                    email = user.email ?: email,
+                    fullName = fullName.ifBlank { user.userMetadata?.get("full_name") as? String ?: "" },
+                    accessToken = accessToken,
                     refreshToken = body.refreshToken,
                     avatarUrl = null
                 )
@@ -103,13 +109,17 @@ class SupabaseAuthRepository(
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 val user = body.user
+                    ?: return Result.failure(Exception("Supabase did not return a user for this session"))
+                val accessToken = body.accessToken
+                    ?.takeIf(String::isNotBlank)
+                    ?: return Result.failure(Exception("Supabase did not return an access token"))
                 val session = UserSession(
-                    userId = user?.id ?: "google_user",
-                    email = user?.email ?: "user@google.com",
-                    fullName = (user?.userMetadata?.get("full_name") as? String) ?: "Google Traveler",
-                    accessToken = body.accessToken ?: "",
+                    userId = user.id,
+                    email = user.email.orEmpty(),
+                    fullName = (user.userMetadata?.get("full_name") as? String).orEmpty(),
+                    accessToken = accessToken,
                     refreshToken = body.refreshToken,
-                    avatarUrl = user?.userMetadata?.get("avatar_url") as? String
+                    avatarUrl = user.userMetadata?.get("avatar_url") as? String
                 )
                 sessionManager.saveSession(session)
                 Result.success(session)

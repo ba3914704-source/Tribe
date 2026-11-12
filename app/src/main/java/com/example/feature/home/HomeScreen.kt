@@ -449,7 +449,10 @@ fun PlanSummaryRowItem(
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "${plan.startDate} • ${plan.totalMembers} Members",
+                    text = listOfNotNull(
+                        plan.startDate.takeIf(String::isNotBlank),
+                        plan.totalMembers.takeIf { it > 0 }?.let { "$it Members" }
+                    ).joinToString(" • "),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

@@ -93,21 +93,18 @@ fun TribeBottomBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-            // Tab 1: Home
             BottomTabItem(
                 tab = NavigationTab.HOME,
                 isSelected = currentTab == NavigationTab.HOME,
                 onClick = { onTabSelected(NavigationTab.HOME) }
             )
 
-            // Tab 2: My Plans
             BottomTabItem(
-                tab = NavigationTab.MY_PLANS,
-                isSelected = currentTab == NavigationTab.MY_PLANS,
-                onClick = { onTabSelected(NavigationTab.MY_PLANS) }
+                tab = NavigationTab.EXPLORE,
+                isSelected = currentTab == NavigationTab.EXPLORE,
+                onClick = { onTabSelected(NavigationTab.EXPLORE) }
             )
 
-            // Prominent Central FAB: Create New Plan
             FloatingActionButton(
                 onClick = onCreatePlanClick,
                 shape = CircleShape,
@@ -125,14 +122,12 @@ fun TribeBottomBar(
                 )
             }
 
-            // Tab 3: Explore
             BottomTabItem(
-                tab = NavigationTab.EXPLORE,
-                isSelected = currentTab == NavigationTab.EXPLORE,
-                onClick = { onTabSelected(NavigationTab.EXPLORE) }
+                tab = NavigationTab.MY_PLANS,
+                isSelected = currentTab == NavigationTab.MY_PLANS,
+                onClick = { onTabSelected(NavigationTab.MY_PLANS) }
             )
 
-            // Tab 4: Profile
             BottomTabItem(
                 tab = NavigationTab.PROFILE,
                 isSelected = currentTab == NavigationTab.PROFILE,

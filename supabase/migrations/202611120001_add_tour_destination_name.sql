@@ -1,0 +1,1 @@
+alter table public.tours add column if not exists destination_name text;
